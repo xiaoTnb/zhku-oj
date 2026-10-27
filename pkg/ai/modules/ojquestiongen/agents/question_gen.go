@@ -33,21 +33,24 @@ type GenerationParams struct {
 }
 
 // GeneratedProblem 生成中的题目（Agent 内部使用）
+// json tag 必须与 prompts 中的输出契约（snake_case）一致。
+// 否则 json.Unmarshal 只能做大小写不敏感匹配，input_format 匹配不上 InputFormat，
+// 字段会被静默丢弃，导致题目详情页的输入输出说明为空。
 type GeneratedProblem struct {
-	ID           string
-	Title        string
-	Description  string
-	InputFormat  string
-	OutputFormat string
-	Hint         string
-	Difficulty   string
+	ID           string `json:"id"`
+	Title        string `json:"title"`
+	Description  string `json:"description"`
+	InputFormat  string `json:"input_format"`
+	OutputFormat string `json:"output_format"`
+	Hint         string `json:"hint"`
+	Difficulty   string `json:"difficulty"`
 }
 
 // TestCase 测试用例（Agent 内部使用）
 type TestCase struct {
-	Input          string
-	ExpectedOutput string
-	IsSample       bool
+	Input          string `json:"input"`
+	ExpectedOutput string `json:"expected_output"`
+	IsSample       bool   `json:"is_sample"`
 }
 
 // QuestionGenAgent 题目生成 Agent
@@ -195,3 +198,4 @@ func extractJSON(content string) string {
 
 	return strings.TrimSpace(content[start : end+1])
 }
+#fix(ai): 修复出题字段解析与沙箱配置，新增演示模式

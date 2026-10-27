@@ -144,6 +144,10 @@ RateLimit:
     Window: 60
 
 AI:
+  # 演示模式：仅在「未配置任何 ApiKey」时生效，用内置样例题目代替大模型输出，
+  # 使无网络/无 Key 环境下也能演示完整的四阶段生成链路（沙箱验证仍真实执行）。
+  # 填入真实 ApiKey 后本开关自动失效，无需改动代码。
+  DemoMode: true
   Chat:
     ApiKey: ""
     BaseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1"
@@ -174,3 +178,4 @@ Scalar:
     .scalar-app .sidebar {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
+#fix(ai): 修复出题字段解析与沙箱配置，新增演示模式

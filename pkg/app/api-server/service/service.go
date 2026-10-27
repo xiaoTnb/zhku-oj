@@ -230,7 +230,15 @@ func newAIRuntimeComponents() *aiRuntimeComponents {
 	}
 	taskManager := runtimetask.NewMemoryTaskManager()
 	contextManager := runtimecontext.NewManager(sessionService, 10)
-	modelFactory := llm.NewConfigModelFactory()
+	// 未配置 ApiKey 时，若开启了 Ai.DemoMode 则切换到演示模式工厂，
+	// 保证「生成题目 → 标准答案 → 测试用例 → 沙箱验证」整条链路可以演示。
+	// 一旦配置了真实 ApiKey，这里始终优先使用配置工厂，演示模式自动让位。
+	var modelFactory llm.ModelFactory = llm.NewConfigModelFactory()
+	if !modelFactory.IsChatConfigured() && conf.Config.AI.DemoMode {
+		utils.Logger.Warnf("AI 未配置 ApiKey 且 Ai.DemoMode=true，已启用演示模式：" +
+			"题目/标准答案/测试用例三阶段返回内置样例，沙箱验证阶段仍为真实执行")
+		modelFactory = llm.NewDemoModelFactory()
+	}
 	chatConfig := modelFactory.ChatConfig()
 	chatConfigured := modelFactory.IsChatConfigured()
 	// AI 配置日志只打印是否已设置，避免在 Docker 日志中泄露 API Key。
@@ -249,18 +257,30 @@ func newAIRuntimeComponents() *aiRuntimeComponents {
 		sandboxLang := &sandbox.LanguageConfig{
 			Name: confLang.Name,
 		}
+		// MemoryLimit / ProcLimit / SourceFile / ExecutableFile 必须一并透传：
+		// 若 procLimit 为 0，go-judge 会把 cgroup 的 pids.max 设为 0，
+		// 导致任何 fork/clone 直接返回 EAGAIN（resource temporarily unavailable）；
+		// SourceFile 为空则 copyIn 写入的文件名为空，编译源文件根本不会落盘。
 		if confLang.Compile != nil {
 			sandboxLang.Compile = &sandbox.StageConfig{
-				Args:      confLang.Compile.Args,
-				Env:       confLang.Compile.Env,
-				TimeLimit: confLang.Compile.TimeLimit,
+				Args:           confLang.Compile.Args,
+				Env:            confLang.Compile.Env,
+				TimeLimit:      confLang.Compile.TimeLimit,
+				MemoryLimit:    confLang.Compile.MemoryLimit,
+				ProcLimit:      confLang.Compile.ProcLimit,
+				SourceFile:     confLang.Compile.SourceFile,
+				ExecutableFile: confLang.Compile.ExecutableFile,
 			}
 		}
 		if confLang.Run != nil {
 			sandboxLang.Run = &sandbox.StageConfig{
-				Args:      confLang.Run.Args,
-				Env:       confLang.Run.Env,
-				TimeLimit: confLang.Run.TimeLimit,
+				Args:           confLang.Run.Args,
+				Env:            confLang.Run.Env,
+				TimeLimit:      confLang.Run.TimeLimit,
+				MemoryLimit:    confLang.Run.MemoryLimit,
+				ProcLimit:      confLang.Run.ProcLimit,
+				SourceFile:     confLang.Run.SourceFile,
+				ExecutableFile: confLang.Run.ExecutableFile,
 			}
 		}
 		sandboxLanguages[lang] = sandboxLang
@@ -333,3 +353,4 @@ func newAIRuntimeComponents() *aiRuntimeComponents {
 		SandboxClient:     sandboxClient,
 	}
 }
+//fix(ai):修复出题字段解析与沙箱配置，新增演示模式

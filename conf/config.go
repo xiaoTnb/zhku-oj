@@ -83,7 +83,10 @@ type configYaml struct {
 		} `yaml:"Submit"`
 	} `yaml:"RateLimit"`
 	AI struct {
-		Chat struct {
+		// DemoMode 演示模式：仅在未配置 ApiKey 时生效，使用内置样例题目代替大模型输出，
+		// 用于无网络/无 Key 环境下演示完整生成链路（沙箱验证阶段仍是真实执行）。
+		DemoMode bool `yaml:"DemoMode"`
+		Chat     struct {
 			ApiKey  string `yaml:"ApiKey"`
 			BaseUrl string `yaml:"BaseUrl"`
 			Model   string `yaml:"Model"`
@@ -309,3 +312,4 @@ func parseInt(s string) (int, error) {
 	_, err := fmt.Sscanf(s, "%d", &result)
 	return result, err
 }
+//fix(ai): 修复出题字段解析与沙箱配置，新增演示模式

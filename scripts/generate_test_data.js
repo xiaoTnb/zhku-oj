@@ -132,7 +132,7 @@ const problems = [
         time_limit: 1000,
         memory_limit: 256,
         tags: ["数组", "哈希表"],
-        status: "active",
+        status: "published",
         is_public: true,
         ac_count: 0,
         submit_count: 0,
@@ -155,7 +155,7 @@ const problems = [
         time_limit: 1000,
         memory_limit: 256,
         tags: ["数学"],
-        status: "active",
+        status: "published",
         is_public: true,
         ac_count: 0,
         submit_count: 0,
@@ -178,7 +178,7 @@ const problems = [
         time_limit: 1000,
         memory_limit: 256,
         tags: ["字符串"],
-        status: "active",
+        status: "published",
         is_public: true,
         ac_count: 0,
         submit_count: 0,
@@ -201,7 +201,7 @@ const problems = [
         time_limit: 2000,
         memory_limit: 256,
         tags: ["数组", "双指针", "排序"],
-        status: "active",
+        status: "published",
         is_public: true,
         ac_count: 0,
         submit_count: 0,
@@ -224,7 +224,7 @@ const problems = [
         time_limit: 2000,
         memory_limit: 256,
         tags: ["字符串", "动态规划"],
-        status: "active",
+        status: "published",
         is_public: true,
         ac_count: 0,
         submit_count: 0,
@@ -247,7 +247,7 @@ const problems = [
         time_limit: 3000,
         memory_limit: 512,
         tags: ["字符串", "动态规划", "递归"],
-        status: "active",
+        status: "published",
         is_public: true,
         ac_count: 0,
         submit_count: 0,
@@ -270,7 +270,7 @@ const problems = [
         time_limit: 3000,
         memory_limit: 512,
         tags: ["链表", "分治", "堆"],
-        status: "active",
+        status: "published",
         is_public: true,
         ac_count: 0,
         submit_count: 0,
@@ -293,7 +293,7 @@ const problems = [
         time_limit: 1000,
         memory_limit: 256,
         tags: ["动态规划", "数学"],
-        status: "active",
+        status: "published",
         is_public: true,
         ac_count: 0,
         submit_count: 0,
@@ -381,27 +381,16 @@ problemsArray.forEach((problem, index) => {
             );
             break;
         default:
-            // 为其他题目生成通用测试用例
-            testCases.push(
-                {
-                    _id: ObjectId(),
-                    problem_id: problem._id,
-                    input: "测试输入1",
-                    output: "测试输出1",
-                    is_sample: false,
-                    score: 50,
-                    created_at: new Date()
-                },
-                {
-                    _id: ObjectId(),
-                    problem_id: problem._id,
-                    input: "测试输入2",
-                    output: "测试输出2",
-                    is_sample: false,
-                    score: 50,
-                    created_at: new Date()
-                }
-            );
+            // 【禁止生成占位用例】之前这里写的是 input:"测试输入1" / output:"测试输出1"，
+            // 后果：任何从标准输入读数据的程序都会直接崩溃——例如 Java 的
+            // Scanner.nextInt() 读到"测试输入1"抛 InputMismatchException，
+            // 判题结果显示"运行时错误"，而学生在页面上"运行示例"却完全正常
+            // （运行只用 sample_input，提交才跑全部用例）。
+            // 缺用例的题目请在上面的 switch 里补齐真实输入输出；
+            // 未覆盖的题目这里只告警、不再插入垃圾数据。
+            print(`⚠️  题目「${problem.title}」未预置测试用例，已跳过（请手工补充真实 input/output）`);
+            break;
+
     }
 });
 
